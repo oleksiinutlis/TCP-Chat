@@ -7,14 +7,10 @@
 // messages from server to client
 #define JOIN_SUCCESS  "Successfully joined!"
 
-#define GAME_STARTED_CMD    "GameStarted"
-#define UPDATE_SCENE_CMD    "UpdateScene"
-
 // messages from client to server
 
 #define MSG      "Message from"
 #define JOIN_ROOM_CMD      "JoinRoom"
-#define CLIENT_POSITION_CMD "ClientPosition"
 
 using namespace boost::asio;
 using ip::tcp;
@@ -53,5 +49,4 @@ protected:
 
 public:
     virtual void handleServerMessage( const std::string& command, boost::asio::streambuf& message ) = 0;
-    virtual const std::string& getUsername() const = 0;
 };

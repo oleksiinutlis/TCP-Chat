@@ -75,18 +75,7 @@ public:
                 // Match is created (we have received 'StartGame' message from 2-d player)
                 if (matchIt != m_roomsList.end())
                 {
-                    if (matchIt->m_player1 && matchIt->m_player2)
-                    {
-                        LOG_ERR("MatchIdTaken");
-                        session.sendMessageToClient("MatchIdTaken;\n");
-                        return;
-                    }
-                    if (!matchIt->m_player1 || matchIt->m_player2)
-                    {
-                        LOG_ERR("MatchIdInternalError");
-                        session.sendMessageToClient("MatchIdInternalError;\n");
-                        return;
-                    }
+                    //TODO
                     return;
                 }
             }

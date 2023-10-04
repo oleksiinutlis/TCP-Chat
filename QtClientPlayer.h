@@ -30,17 +30,8 @@ public:
         {
             std::cout << command << std::endl;
             startReading();
-
-        }
-        else if (command == GAME_STARTED_CMD)
-        {
-            std::string direction;
-            std::getline(input, direction, ';');
-            LOG(direction);
         }
     }
-
-    virtual const std::string& getUsername() const override { return m_username; }
 
     void setUsername(const std::string& username) { m_username = username; }
 
