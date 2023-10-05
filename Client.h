@@ -8,7 +8,7 @@ class Client : public IClient
 {
     TcpClient*  m_tcpClient = nullptr;
 
-    std::string m_username = "QtClientPlayer";
+    std::string m_username = "Client";
 
 public:
     Client(){};
@@ -17,11 +17,7 @@ public:
 
     virtual void handleServerMessage(const std::string& command, boost::asio::streambuf& message) override
     {
-        /*if ( message.size() <= 0 )
-        {
-            return;
-        }*/
-        LOG("Recieved from server: " << std::string((const char*)message.data().data(), message.size()).c_str() << "\n");
+        std::cout << "Recieved from server: " << std::string((const char*)message.data().data(), message.size()).c_str();
 
         std::istringstream input;
         input.str(std::string((const char*)message.data().data(), message.size()));

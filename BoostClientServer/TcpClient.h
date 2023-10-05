@@ -9,13 +9,13 @@ class TcpClient
 {
     io_context&  m_ioContext;
     tcp::socket m_socket;
-    IClient* m_player;
+    IClient* m_client;
 
 public:
-    TcpClient( io_context&  ioContext, IClient& player ) :
+    TcpClient( io_context&  ioContext, IClient& client ) :
         m_ioContext(ioContext),
         m_socket(m_ioContext),
-        m_player(&player)
+        m_client(&client)
     {}
     
     ~TcpClient()
@@ -86,7 +86,7 @@ public:
                     std::getline( response, command, ';' );
 
                     //std::cout << "#CLIENT: " << m_player->playerName() << ": FROM SERVER: " << command << std::endl;
-                    m_player->handleServerMessage( command, *streambuf );
+                    m_client->handleServerMessage( command, *streambuf );
 
                 }
 
