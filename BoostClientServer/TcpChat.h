@@ -8,27 +8,23 @@ class Room;
 struct User
 {
     Room&             m_room;
-    IChatSession*     m_session;
+    IClientSession*   m_session;
     const std::string m_userLogin;
-    User( Room& match, IChatSession* session, std::string login) : m_room(match), m_session(session), m_userLogin(login) {
+    User( Room& match, IClientSession* session, std::string login) : m_room(match), m_session(session), m_userLogin(login) {
     }
 };
 
 class Room
 {
-    io_context&             m_serverIoContext;
-    
 public:
     const std::string       m_roomId;
 
-    std::shared_ptr<User>   m_player1;
-    std::shared_ptr<User>   m_player2;
-
+    std::map<std::string, User> m_userMap;
     
 public:
-    Room( io_context& serverIoContext, const std::string& matchId )
-    : m_serverIoContext(serverIoContext),
-      m_roomId(matchId)
+    Room() = default;
+    Room( const std::string& matchId )
+    : m_roomId(matchId)
     {}
 
 };
@@ -37,13 +33,13 @@ class TcpChat: public ITcpChat
 {
     io_context&             m_serverIoContext;
 
-    std::list<Room> m_roomsList;
+    std::map<std::string, Room> m_roomsList;
     
 public:
     
     TcpChat( io_context& serverIoContext ) : m_serverIoContext( serverIoContext ) {}
     
-    virtual void handlePlayerMessage( IChatSession& session, boost::asio::streambuf& message ) override
+    virtual void handlePlayerMessage( IClientSession& session, boost::asio::streambuf& message ) override
     {
         std::cout << "Recieved from client:" << std::string((const char*)message.data().data(), message.size()).c_str() << "\n";
 
@@ -55,41 +51,42 @@ public:
         
         if (command == JOIN_ROOM_CMD)
         {
-            // Get 'MatchId'
             std::string roomId;
             std::getline(input, roomId, ';');
             std::string loginId;
             std::getline(input, loginId, ';');
             {
-                auto matchIt = std::find_if(m_roomsList.begin(), m_roomsList.end(), [&roomId](const auto& match) {
-                    return match.m_roomId == roomId;
-                    });
-
-                // Match is created (we have received 'StartGame' message from 2-d player)
+                auto matchIt = m_roomsList.find(roomId);
                 if (matchIt != m_roomsList.end())
                 {
-                    auto& front = m_roomsList.front();
-                    front.m_player2 = std::make_shared<User>(front, &session, loginId);
+                    User newUser(m_roomsList[roomId], &session, loginId);
+                    m_roomsList[roomId].m_userMap.emplace(loginId, newUser);
                     session.sendMessageToClient(JOIN_SUCCESS ";\n");
-                    //TODO
                     return;
                 }
             }
-            m_roomsList.emplace_front(m_serverIoContext, roomId);
 
-            //
-            // Send WAIT_2d_PLAYER_CMD command to 1-st player
-            //
-            auto& front = m_roomsList.front();
-            front.m_player1 = std::make_shared<User>(front, &session, loginId);
+            Room newRoom(roomId);
+            User newUser(newRoom, &session, loginId);
+            newRoom.m_userMap.emplace(loginId, newUser);
+
+            m_roomsList.emplace(roomId, newRoom);
             session.sendMessageToClient(JOIN_SUCCESS ";\n");
         }
         else if (command == MSG) {
             std::string userId;
             std::getline(input, userId, ';');
+            std::string roomId;
+            std::getline(input, roomId, ';');
             std::string message;
             std::getline(input, message, ';');
-
+            for (auto it : m_roomsList[roomId].m_userMap) {
+                it.second.m_session->sendMessageToClient(MSG ";" + userId + ";" + message + "\n");
+            }
         }
+    }
+
+    virtual void kickPlayer(IClientSession& client) override {
+
     }
 };

@@ -16,10 +16,10 @@ using namespace boost::asio;
 using ip::tcp;
 
 
-class IChatSession
+class IClientSession
 {
 public:
-    virtual ~IChatSession() = default;
+    virtual ~IClientSession() = default;
 
     virtual void sendMessageToClient( std::string message ) = 0;
     virtual void sendMessageToClient( std::shared_ptr<boost::asio::streambuf> wrStreambuf ) = 0;
@@ -28,11 +28,13 @@ public:
 
 class ITcpChat
 {
+
 protected:
     virtual ~ITcpChat() = default;
 
 public:
-    virtual void handlePlayerMessage( IChatSession&, boost::asio::streambuf& message ) = 0;
+    virtual void handlePlayerMessage( IClientSession&, boost::asio::streambuf& message ) = 0;
+    virtual void kickPlayer(IClientSession& client) = 0;
 };
 
 class IClient

@@ -17,7 +17,7 @@ public:
 
     virtual void handleServerMessage(const std::string& command, boost::asio::streambuf& message) override
     {
-        std::cout << "Recieved from server: " << std::string((const char*)message.data().data(), message.size()).c_str();
+        //std::cout << "Recieved from server: " << std::string((const char*)message.data().data(), message.size()).c_str();
 
         std::istringstream input;
         input.str(std::string((const char*)message.data().data(), message.size()));
@@ -26,6 +26,14 @@ public:
         {
             std::cout << command << std::endl;
             startReading();
+        }
+        else if (command == MSG) {
+            std::string userId;
+            std::getline(input, userId, ';');
+            std::string message;
+            std::getline(input, message, ';');
+
+            std::cout << "[" + userId + "]: " << message << std::endl;
         }
     }
 
@@ -39,7 +47,7 @@ public:
                 std::string input;
                 std::getline(std::cin, input);
                 if (input != "") {
-                    m_tcpClient->sendMessageToServer(MSG ";" + m_username + ";" + input + ";");
+                    m_tcpClient->sendMessageToServer(MSG ";" + m_username + ";" + m_tcpClient->getRoomId() + ";" + input + ";");
                 }
             }
             });

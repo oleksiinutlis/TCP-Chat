@@ -6,7 +6,7 @@
 using namespace boost::asio;
 using ip::tcp;
 
-class ChatSession : public std::enable_shared_from_this<ChatSession>, public IChatSession
+class ClientSesson : public std::enable_shared_from_this<ClientSesson>, public IClientSession
 {
     io_context&             m_ioContext;
     ITcpChat&               m_chat;
@@ -15,14 +15,14 @@ class ChatSession : public std::enable_shared_from_this<ChatSession>, public ICh
     
 
 public:
-    ChatSession( io_context& ioContext, ITcpChat& chat, tcp::socket&& socket)
+    ClientSesson( io_context& ioContext, ITcpChat& chat, tcp::socket&& socket)
       : m_ioContext(ioContext),
         m_chat(chat),
         m_socket(std::move(socket))
     {
     }
 
-    ~ChatSession() { std::cout << "!!!! ~ClientSession()" << std::endl; }
+    ~ClientSesson() { std::cout << "!!!! ~ClientSession()" << std::endl; }
 
     virtual void sendMessageToClient( std::string command ) override
     {
@@ -57,7 +57,13 @@ public:
             {
                 if ( ec )
                 {
+                    int value = ec.value();
+                    if (value == 10054) {
+                        m_chat.kickPlayer(*this);
+                    }
                     std::cout << "!!!! ClientSession::readMessage error: " << ec.message() << std::endl;
+
+                    
                     exit(-1);
                 }
                 else
@@ -82,7 +88,7 @@ class TcpServer
     tcp::acceptor   m_acceptor;
     tcp::socket     m_socket;
 
-    std::vector<std::shared_ptr<ChatSession>> m_sessions;
+    std::vector<std::shared_ptr<ClientSesson>> m_sessions;
 
 public:
     TcpServer( io_context& ioContext, ITcpChat& game, int port ) :
@@ -105,7 +111,7 @@ public:
         m_acceptor.async_accept( [this] (boost::system::error_code ec, ip::tcp::socket socket ) {
             if (!ec)
             {
-                std::make_shared<ChatSession>( m_ioContext, m_game, std::move(socket) )->readMessage();
+                std::make_shared<ClientSesson>( m_ioContext, m_game, std::move(socket) )->readMessage();
             }
 
             accept();

@@ -10,8 +10,13 @@ class TcpClient
     io_context&  m_ioContext;
     tcp::socket m_socket;
     IClient* m_client;
-
+    std::string m_roomId;
 public:
+
+    void setRoomId(std::string id) { m_roomId = id; }
+
+    const std::string& getRoomId() { return m_roomId; }
+
     TcpClient( io_context&  ioContext, IClient& client ) :
         m_ioContext(ioContext),
         m_socket(m_ioContext),
@@ -85,7 +90,7 @@ public:
                     std::string command;
                     std::getline( response, command, ';' );
 
-                    //std::cout << "#CLIENT: " << m_player->playerName() << ": FROM SERVER: " << command << std::endl;
+                 
                     m_client->handleServerMessage( command, *streambuf );
 
                 }

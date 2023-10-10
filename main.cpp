@@ -8,8 +8,8 @@
 
 int main(int argc, char* argv[])
 {
-
-    //// server
+    SetThreadUILanguage(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
+    // Server
     std::thread([]
         {
             io_context serverIoContext;
@@ -18,7 +18,6 @@ int main(int argc, char* argv[])
             TcpServer server(serverIoContext, chat, 1234);
             server.execute();
         }).detach();
-    //
-    // Real player
+    // User
     join();
 }
